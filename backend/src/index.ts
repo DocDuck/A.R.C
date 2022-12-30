@@ -1,5 +1,6 @@
 import { MikroORM, defineConfig } from "@mikro-orm/core";
 import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import { Post } from "./entities/Post";
 import { isProd } from "./utils/constants";
 
 const main = async () => {
@@ -11,7 +12,13 @@ const main = async () => {
         debug: !isProd       
     });
 
+    const fork = orm.em.fork()
+
+    const post = fork.create(Post, {title: "Firs post!"})
+    await fork.persistAndFlush(post)
     console.log(orm.em)
 }
-
-main()
+ 
+main().catch(er => {
+    console.error(er)
+})
