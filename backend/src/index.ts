@@ -1,15 +1,16 @@
-import { MikroORM, defineConfig } from "@mikro-orm/core";
-import type { PostgreSqlDriver } from '@mikro-orm/postgresql';
+import {MikroORM, defineConfig, IDatabaseDriver} from "@mikro-orm/core";
 import { Post } from "./entities/Post";
-import { isProd } from "./utils/constants";
+import {dbPort, dbPassword, isProd, dbName} from "./utils/constants";
 
 const main = async () => {
-    const orm = await MikroORM.init<PostgreSqlDriver>({
-        dbName: 'ARC_DB',
+    const orm = await MikroORM.init<IDatabaseDriver>({
+        dbName: dbName,
+        password: dbPassword,
         type: "postgresql",
+        port: dbPort,
         entities: ['./dist/entities'], // path to our JS entities (dist), relative to `baseDir`
         entitiesTs: ['./src/entities'], // path to our TS entities (src), relative to `baseDir`
-        debug: !isProd       
+        debug: !isProd
     });
 
     const fork = orm.em.fork()
@@ -18,7 +19,7 @@ const main = async () => {
     await fork.persistAndFlush(post)
     console.log(orm.em)
 }
- 
+
 main().catch(er => {
     console.error(er)
 })
