@@ -1,23 +1,15 @@
-import {MikroORM, defineConfig, IDatabaseDriver} from "@mikro-orm/core";
+import { MikroORM } from "@mikro-orm/core";
 import { Post } from "./entities/Post";
-import {dbPort, dbPassword, isProd, dbName} from "./utils/constants";
+import mikroOrmConfig from "./mikro-orm.config";
 
 const main = async () => {
-    const orm = await MikroORM.init<IDatabaseDriver>({
-        dbName: dbName,
-        password: dbPassword,
-        type: "postgresql",
-        port: dbPort,
-        entities: ['./dist/entities'], // path to our JS entities (dist), relative to `baseDir`
-        entitiesTs: ['./src/entities'], // path to our TS entities (src), relative to `baseDir`
-        debug: !isProd
-    });
-
+    const orm = await MikroORM.init(mikroOrmConfig);
+    await orm.getMigrator().up();
     const fork = orm.em.fork()
-
-    const post = fork.create(Post, {title: "Firs post!"})
-    await fork.persistAndFlush(post)
-    console.log(orm.em)
+    // const post = fork.create(Post, {title: "Another post!"})
+    // await fork.persistAndFlush(post);
+    const posts = await fork.find(Post,  {})
+    console.log(posts)
 }
 
 main().catch(er => {
